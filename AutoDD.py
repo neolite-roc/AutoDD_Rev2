@@ -22,12 +22,14 @@ __author__ = "Fufu Fang kaito1410 Napo2k"
 __copyright__ = "The GNU General Public License v3.0"
 
 # Native Python imports
+import json
 import os
 import math
 import sys
 import re
 import logging
-import csv 
+import csv
+import urllib
 
 from collections import Counter
 from datetime import datetime, timedelta
@@ -337,7 +339,7 @@ def get_list_val(lst, index):
             return 0
 
 
-def print_tbl(tbl, filename, allsub, yahoo, writecsv):
+def print_tbl(tbl, filename, allsub, yahoo, writeformat):
 
     header = ['Code', 'Total', 'Recent', 'Prev', 'Change', 'Rockets']
 
@@ -354,25 +356,18 @@ def print_tbl(tbl, filename, allsub, yahoo, writecsv):
     tbl = [[k] + v for k, v in tbl]
 
     now = datetime.now()
-    # dd/mm/YY H:M:S
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    # YY-mm-dd H:M AM/PM
+    dt_string = now.strftime("%Y-%m-%d %I:%M %p")
 
     #print("date and time now = ", dt_string)
     #print(tabulate(tbl, headers=header))
 
     # save the file to the same dir as the AutoDD.py script
-    completeName = os.path.join(sys.path[0], filename)
-
-    # write to file
-    #with open(completeName, "a") as myfile:
-     #   myfile.write("date and time now = ")
-      #  myfile.write(dt_string)
-      #  myfile.write('\n')
-      #  myfile.write(tabulate(tbl, headers=header, floatfmt=".3f"))
-      #  myfile.write('\n\n')
-
+    save_path = 'C:\\sandbox\\stock-rockets\\src\\assets'
+    #completeName = os.path.join(sys.path[0], filename)
+    completeName = os.path.join(save_path, filename)
     print(completeName)
-    if writecsv:
+    if writeformat == 'csv':
         # write to csv
         completeName = completeName + '.csv'
         with open(completeName, 'a') as csvfile:
@@ -380,6 +375,40 @@ def print_tbl(tbl, filename, allsub, yahoo, writecsv):
             writer.writerow(header)
             for row in tbl:
                 writer.writerow(row)
+    elif writeformat == 'json':
+        # write to json
+        completeName = completeName + '.json'
+
+        # Delete the last dump file if it exists
+        if os.path.exists(completeName):
+            os.remove(completeName)
+        else:
+            print(completeName + " does not exist")
+
+        data = {'stocks': []}
+        for row in tbl:
+            row_content = {}
+            for i in range(len(header)):
+                row_content.update({f'{header[i]}'.format(header[i]).lower(): row[i]})
+            data['stocks'].append(row_content)
+        with open(completeName, 'w') as outfile:
+            json.dump(data, outfile)
+
+        # Create a timestamp file
+        last_load = os.path.join(save_path, 'last_load.json')
+
+        # Delete the last dump file if it exists
+        if os.path.exists(last_load):
+            os.remove(last_load)
+        else:
+            print(last_load + " does not exist")
+
+        data = {'data': []}
+        row_content = {}
+        row_content.update({'date': dt_string})
+        data['data'].append(row_content)
+        with open(last_load, "a") as outfile:
+            json.dump(data, outfile)
     else:
         # write to file
         completeName = completeName + '.txt'
@@ -389,6 +418,25 @@ def print_tbl(tbl, filename, allsub, yahoo, writecsv):
             myfile.write('\n')
             myfile.write(tabulate(tbl, headers=header, floatfmt=".3f"))
             myfile.write('\n\n')
+
+    #print(completeName)
+    #if writecsv:
+    #    # write to csv
+    #    completeName = completeName + '.csv'
+    #    with open(completeName, 'a') as csvfile:
+    #        writer = csv.writer(csvfile)
+    #        writer.writerow(header)
+    #        for row in tbl:
+    #            writer.writerow(row)
+    #else:
+        # write to file
+    #    completeName = completeName + '.txt'
+    #    with open(completeName, "a") as myfile:
+    #        myfile.write("date and time now = ")
+    #        myfile.write(dt_string)
+    #        myfile.write('\n')
+    #        myfile.write(tabulate(tbl, headers=header, floatfmt=".3f"))
+    #        myfile.write('\n\n')
         
     #logs to console
     print("Wrote to file successfully: ")

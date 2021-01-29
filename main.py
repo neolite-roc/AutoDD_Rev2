@@ -51,6 +51,9 @@ def main():
     parser.add_argument('--csv', default=False, action='store_true',
                     help='Using this parameter produces a table_records.csv file, rather than a .txt file')
 
+    parser.add_argument('--json', default=False, action='store_true',
+                    help='Using this parameter produces a table_records.json file, rather than a .txt file')
+
     parser.add_argument('--filename', nargs='?', const='table_records', type=str, default='table_records',
                     help='Change the file name from table_records to whatever you wish')
 
@@ -95,7 +98,13 @@ def main():
         print("Getting yahoo finance information...")
         results_tbl = getTickerInfo(results_tbl)
 
-    print_tbl(results_tbl, args.filename, args.allsub, args.yahoo, args.csv)
+    if args.json:
+        print("Exporting data as JSON file...")
+        print_tbl(results_tbl, args.filename, args.allsub, args.yahoo, 'json')
+    else:
+        print_tbl(results_tbl, args.filename, args.allsub, args.yahoo, 'csv')
+
+    #print_tbl(results_tbl, args.filename, args.allsub, args.yahoo, args.csv)
 
 if __name__ == '__main__':
     main()
