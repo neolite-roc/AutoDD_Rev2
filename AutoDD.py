@@ -278,7 +278,8 @@ def filter_tbl(tbl, min_val):
         'THE', 'FUCK', 'ING', 'CEO', 'USD', 'WSB', 'FDA', 'NEWS', 'FOR', 'YOU', 'AMTES', 'WILL', 'CDT', 'SUPPO', 'MERGE',
         'BUY', 'HIGH', 'ADS', 'FOMO', 'THIS', 'OTC', 'ELI', 'IMO', 'TLDR', 'SHIT', 'ETF', 'BOOM', 'THANK', 'MAYBE', 'AKA',
         'CBS', 'SEC', 'NOW', 'OVER', 'ROPE', 'MOON', 'SSR', 'HOLD', 'SELL', 'COVID', 'GROUP', 'MONDA', 'PPP', 'REIT', 'HOT', 
-        'USA', 'YOLO', 'MUSK', 'AND', 'STONK', 'ELON', 'CAD'
+        'USA', 'YOLO', 'MUSK', 'AND', 'STONK', 'ELON', 'CAD', 'FREE', 'BEST', 'MOST', 'JUST', 'NEXT', 'BIG', 'AWAY', 'DROP', 'STAY',
+        'FLY', 'EVER', 'TRIP', 'MUST', 'ALL', 'NEW'
     ]
 
     tbl = [row for row in tbl if row[1][0] >= min_val or row[1][1] >= min_val]
@@ -395,7 +396,7 @@ def print_tbl(tbl, filename, allsub, yahoo, writeformat):
             json.dump(data, outfile)
 
         # Create a timestamp file
-        last_load = os.path.join(save_path, 'last_load.json')
+        last_load = os.path.join(save_path, filename + '_last_load.json')
 
         # Delete the last dump file if it exists
         if os.path.exists(last_load):
