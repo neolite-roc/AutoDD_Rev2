@@ -46,12 +46,13 @@ subreddit_dict = {'pennystocks' : 'pnystks',
                   'StockMarket' : 'stkmrkt',
                   'stocks' : 'stocks',
                   'investing' : 'invstng',
-                  'wallstreetbets' : 'WSB'}
+                  'wallstreetbets' : 'WSB',
+                  'weedstocks': 'weeds'}
 
 quick_stats_hidden = [('previousClose', 'PrvCls'), ('fiftyDayAverage', 'fiftyDayAverage'), ('volume','Volume'), ('averageVolume', '3mAvgVol')]
 
 # quick stats that is important to most users (IMO)
-quick_stats = [('currentPrice','Price'), ('regularMarketChangePercent','%DayChange'), ('50DayChange','%50DayChange'), ('%ChangeVol', '%ChangeVol'), ('floatShares', 'Float'), ('industry', 'Industry')]
+quick_stats = [('currentPrice','Price'), ('regularMarketChangePercent','DayChange'), ('50DayChange','50DayChange'), ('ChangeVol', 'ChangeVol'), ('floatShares', 'Float'), ('industry', 'Industry')]
 
 # dictionary of ticker financial information to get from yahoo
 financial_measures = {'currentPrice' : 'Price', 'quickRatio': 'QckRatio', 'currentRatio': 'CrntRatio', 'targetMeanPrice': 'Trgtmean', 'recommendationKey': 'Recommend'}
@@ -340,19 +341,19 @@ def get_list_val(lst, index):
             return 0
 
 
-def print_tbl(tbl, filename, allsub, yahoo, writeformat):
+def print_tbl(tbl, filename, interval):
 
     header = ['Code', 'Total', 'Recent', 'Prev', 'Change', 'Rockets']
 
-    if allsub:
-        header = header + list(subreddit_dict.values())
+    #if allsub:
+    #    header = header + list(subreddit_dict.values())
 
     header = header + [x[1] for x in quick_stats]
 
-    if yahoo:
-        header = header + list(summary_measures.values())
-        header = header + list(financial_measures.values())
-        header = header + list(key_stats_measures.values())
+    #if yahoo:
+    header = header + list(summary_measures.values())
+    header = header + list(financial_measures.values())
+    header = header + list(key_stats_measures.values())
 
     tbl = [[k] + v for k, v in tbl]
 
@@ -364,81 +365,51 @@ def print_tbl(tbl, filename, allsub, yahoo, writeformat):
     #print(tabulate(tbl, headers=header))
 
     # save the file to the same dir as the AutoDD.py script
-    save_path = 'C:\\sandbox\\stock-rockets\\src\\assets'
-    #completeName = os.path.join(sys.path[0], filename)
-    completeName = os.path.join(save_path, filename)
+    save_path = 'C:\\sandbox\\stock-rockets\\src\\assets\\data'
+    completeName = os.path.join(save_path, filename.lower() + '_' + str(interval))
+    load_successful = False
+
+    # write to json
+    completeName = completeName + '.json'
     print(completeName)
-    if writeformat == 'csv':
-        # write to csv
-        completeName = completeName + '.csv'
-        with open(completeName, 'a') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(header)
-            for row in tbl:
-                writer.writerow(row)
-    elif writeformat == 'json':
-        # write to json
-        completeName = completeName + '.json'
 
-        # Delete the last dump file if it exists
-        if os.path.exists(completeName):
-            os.remove(completeName)
-        else:
-            print(completeName + " does not exist")
+    data = {'stocks': []}
+    for row in tbl:
+        row_content = {}
+        for i in range(len(header)):
+            row_content.update({f'{header[i]}'.format(header[i]).lower(): row[i]})
+        data['stocks'].append(row_content)
 
-        data = {'stocks': []}
-        for row in tbl:
-            row_content = {}
-            for i in range(len(header)):
-                row_content.update({f'{header[i]}'.format(header[i]).lower(): row[i]})
-            data['stocks'].append(row_content)
+    if data['stocks'].__len__() > 0:
+        load_successful = True
+
+    # Delete the last dump file if it exists
+    if load_successful and os.path.exists(completeName):
+        os.remove(completeName)
+    else:
+        print(completeName + " does not exist")
+    if load_successful:
         with open(completeName, 'w') as outfile:
             json.dump(data, outfile)
 
-        # Create a timestamp file
-        last_load = os.path.join(save_path, filename + '_last_load.json')
+    # Create a timestamp file
+    last_load_date = os.path.join(save_path, filename.lower() + '_' + str(interval) + '_load.json')
 
-        # Delete the last dump file if it exists
-        if os.path.exists(last_load):
-            os.remove(last_load)
+    data = {'data': []}
+    row_content = {}
+    row_content.update({'date': dt_string})
+    data['data'].append(row_content)
+
+    # Delete the last dump file if it exists
+    if load_successful:
+        if os.path.exists(last_load_date):
+            os.remove(last_load_date)
         else:
-            print(last_load + " does not exist")
-
-        data = {'data': []}
-        row_content = {}
-        row_content.update({'date': dt_string})
-        data['data'].append(row_content)
-        with open(last_load, "a") as outfile:
+            print(last_load_date + " does not exist")
+    if load_successful:
+        with open(last_load_date, "a") as outfile:
             json.dump(data, outfile)
-    else:
-        # write to file
-        completeName = completeName + '.txt'
-        with open(completeName, "a") as myfile:
-            myfile.write("date and time now = ")
-            myfile.write(dt_string)
-            myfile.write('\n')
-            myfile.write(tabulate(tbl, headers=header, floatfmt=".3f"))
-            myfile.write('\n\n')
 
-    #print(completeName)
-    #if writecsv:
-    #    # write to csv
-    #    completeName = completeName + '.csv'
-    #    with open(completeName, 'a') as csvfile:
-    #        writer = csv.writer(csvfile)
-    #        writer.writerow(header)
-    #        for row in tbl:
-    #            writer.writerow(row)
-    #else:
-        # write to file
-    #    completeName = completeName + '.txt'
-    #    with open(completeName, "a") as myfile:
-    #        myfile.write("date and time now = ")
-    #        myfile.write(dt_string)
-    #        myfile.write('\n')
-    #        myfile.write(tabulate(tbl, headers=header, floatfmt=".3f"))
-    #        myfile.write('\n\n')
-        
     #logs to console
     print("Wrote to file successfully: ")
     print(completeName)

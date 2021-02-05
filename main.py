@@ -94,17 +94,11 @@ def main():
     print("Getting quick stats...")
     results_tbl = getQuickStats(results_tbl)
 
-    if args.yahoo:
-        print("Getting yahoo finance information...")
-        results_tbl = getTickerInfo(results_tbl)
+    print("Getting yahoo finance information...")
+    results_tbl = getTickerInfo(results_tbl)
 
-    if args.json:
-        print("Exporting data as JSON file...")
-        print_tbl(results_tbl, args.filename, args.allsub, args.yahoo, 'json')
-    else:
-        print_tbl(results_tbl, args.filename, args.allsub, args.yahoo, 'csv')
-
-    #print_tbl(results_tbl, args.filename, args.allsub, args.yahoo, args.csv)
+    print("Exporting data as JSON file...")
+    print_tbl(results_tbl, args.filename, args.interval)
 
 if __name__ == '__main__':
     main()
